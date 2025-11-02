@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfólio Criativo do Vinicius</title>
+    <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan: #66fcea;
+            --purple: #a855f7;
+            --dark: #0a0a0f;
+            --gradient: linear-gradient(135deg, #66fcea, #a855f7);
+            --bg-pos-x: 50%;
+            --bg-pos-y: 50%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--dark);
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Three.js Canvas Background */
+        #canvas3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Loading Animation */
+        .preloadingPageDiv {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-out;
+        }
+
+        .preloadingPageDiv.loaded {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-out, visibility 0s linear 1s;
+            pointer-events: none;
+        }
+
+        #preloader-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .loader-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .loader-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            letter-spacing: 8px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 20px rgba(102, 252, 234, 0.4));
+            }
+            50% { 
+                filter: drop-shadow(0 0 40px rgba(102, 252, 234, 0.8));
+            }
+        }
+
+        .loader {
+            width: 120px;
+            height: 120px;
+            border: 3px solid rgba(102, 252, 234, 0.1);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            position: relative;
+        }
+
+        .loader::before,
+        .loader::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .loader::before {
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 3px solid rgba(168, 85, 247, 0.1);
+            border-top-color: var(--purple);
+            animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+        }
+
+        .loader::after {
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 2px solid rgba(102, 252, 234, 0.2);
+            border-top-color: var(--cyan);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-progress {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px rgba(102, 252, 234, 0.6);
+        }
+
+        /* Header Navigation */
+        .contactLinkDiv {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 10px 20px;
+        }
+
+        .navigationLinks ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navigationLinks a {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .navigationLinks a:hover {
+            color: var(--cyan);
+            background: rgba(102, 252, 234, 0.1);
+            text-shadow: 0 0 10px var(--cyan);
+        }
+
+        .navigationLinks .iconify {
+            font-size: 18px;
+        }
+
+        /* Main Presentation - Efeito Túnel */
+        .presentation {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .mainTitle {
+            text-align: center;
+            animation: fadeInUp 1s ease-out;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alainTaiText {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 900;
+            letter-spacing: 15px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 40px rgba(102, 252, 234, 0.6));
+        }
+
+        .creativeDevText {
+            font-size: clamp(1.2rem, 3vw, 2.5rem);
+            color: var(--cyan);
+            text-shadow: 0 0 20px var(--cyan);
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .drapeauDiv {
+            margin: 30px 0;
+        }
+
+        .drapeau {
+            width: 60px;
+            height: 40px;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(102, 252, 234, 0.3);
+        }
+
+        .contact_me_button {
+            margin-top: 40px;
+        }
+
+        .contactMe_Text {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 40px;
+            background: var(--gradient);
+            color: #000;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 252, 234, 0.3);
+        }
+
+        .contactMe_Text:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 252, 234, 0.5);
+        }
+
+        .scrollToNavigate {
+            position: absolute;
+            bottom: 80px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .scrollView {
+            position: absolute;
+            bottom: 30px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .logo {
+            width: 30px;
+            height: 50px;
+        }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            padding: 100px 5%;
+            position: relative;
+            z-index: 2;
+            background-color: transparent;
+        }
+
+        /* TV Screen - Centro */
+        #tv-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40vw;
+            max-width: 600px;
+            min-height: 250px;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(102, 252, 234, 0.3);
+            border-radius: 20px;
+            z-index: 5;
+            padding: 35px;
+            color: #fff;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(102, 252, 234, 0.2);
+        }
+
+        #tv-screen.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        .titleSection2 {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .myProjectText {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(102, 252, 234, 0.5);
+        }
+
+        /* Projects - Lado Direito Sem Bordas */
+        .textProjectsDiv {
+            max-width: 1200px;
+            margin: 0 0 0 auto;
+            text-align: right;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .content-wrapper {
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .singleline {
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .textProjectsTest,
+        .textProjectsTestLab,
+        .meProjectsTest {
+            display: block;
+            padding: 15px 0;
+            font-size: clamp(1.3rem, 2.8vw, 2.2rem);
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s ease;
+            font-weight: 300;
+        }
+
+        .textProjectsTest:hover,
+        .textProjectsTestLab:hover {
+            color: var(--cyan);
+            transform: translateX(-15px);
+            text-shadow: 0 0 15px var(--cyan);
+        }
+
+        .pointProjects,
+        .pointProjectsLab {
+            color: var(--cyan);
+            margin: 0 15px;
+        }
+
+        .spanProjectGradientText,
+        .spanProjectGradientTextPurple,
+        .spanProjectGradientTextTurquoise,
+        .spanProjectGradientTextBlue,
+        .spanProjectGradientTextMe {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        /* Skills Section */
+        .movieEditingDiv {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .technologyUsedDiv {
+            display: grid;
+            grid-template-columns: repeat(6, auto);
+            gap: 25px;
+            justify-content: end;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .block {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .blockText {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-right: 20px;
+        }
+
+        .technologyUsedDiv a,
+        .movieEditingDiv a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .technologyUsedDiv a:hover,
+        .movieEditingDiv a:hover {
+            transform: translateY(-8px) scale(1.15) rotate(5deg);
+            background: rgba(102, 252, 234, 0.15);
+            box-shadow: 0 15px 40px rgba(102, 252, 234, 0.4);
+        }
+
+        .iconify {
+            font-size: 45px;
+        }
+
+        .newicons {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        /* About Me Section */
+        .singlelineMe {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stayInTouchDiv {
+            margin: 40px 0;
+        }
+
+        .meProjectsTest {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .uperLink {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .uperLink:hover {
+            background: rgba(102, 252, 234, 0.1);
+            transform: translateX(10px);
+        }
+
+        .stayInTocuhLink {
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        .technologyUsedDiv .blockText {
+            grid-column: 1 / -1;
+            text-align: right;
+        }
+
+        @media (max-width: 768px) {
+            .contactLinkDiv {
+                position: static;
+                margin: 20px;
+            }
+
+            .navigationLinks ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .alainTaiText {
+                letter-spacing: 5px;
+            }
+
+            section {
+                padding: 60px 20px;
+            }
+
+            .movieEditingDiv {
+                flex-direction: column;
+            }
+
+            .technologyUsedDiv {
+                grid-template-columns: repeat(3, auto);
+                justify-content: center;
+            }
+
+            .technologyUsedDiv .blockText {
+                text-align: center;
+            }
+
+            .textProjectsDiv {
+                text-align: left;
+            }
+
+            #tv-screen {
+                width: 80vw;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .alainTaiText {
+                font-size: clamp(2rem, 12vw, 4rem);
+            }
+
+            .creativeDevText {
+                font-size: 1rem;
+            }
+
+            section {
+                padding: 80px 15px;
+            }
+
+            .technologyUsedDiv {
+                grid-template-columns: repeat(2, auto);
+            }
+        }
+
+        /* Particle Effect */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas3d"></canvas>
+    
+    <div class="preloadingPageDiv">
+        <canvas id="preloader-canvas"></canvas>
+        <div class="loader-content">
+            <h2 class="loader-title">VINICIUS</h2>
+            <div class="loader"></div>
+            <div class="loading-progress">CARREGANDO<span id="progress-dots">...</span></div>
+            <div class="loading-bar">
+                <div class="loading-bar-fill" id="loading-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TV para exibir descrições -->
+    <div id="tv-screen"></div>
+
+    <header class="contactLinkDiv">
+        <nav class="navigationLinks">
+            <ul>
+                <li>
+                    <a href="#" target="_blank" rel="noopener">
+                        <span class="iconify" data-icon="akar-icons:discord-fill"></span>
+                        Discord
+                    </a>
+                </li>
+                <li>
+                    <a href="#" target="_blank" rel="noopener">
+                        <span class="iconify" data-icon="akar-icons:telegram-fill"></span>
+                        Telegram
+                    </a>
+                </li>
+                <li>
+                    <a href="#" target="_blank" rel="noopener">
+                        <span class="iconify" data-icon="akar-icons:whatsapp-fill"></span>
+                        Whatsapp
+                    </a>
+                </li>
+                <li>
+                    <a href="mailto:vns.pontual77@gmail.com" target="_blank" rel="noopener">
+                        <span class="iconify" data-icon="ic:baseline-alternate-email"></span>
+                        E-mail
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="presentation">
+        <div class="mainTitle">
+            <h1 class="alainTaiText">VINICIUS PONTUAL</h1>
+            <p class="creativeDevText" id="creativeDev">Desenvolvedor Web Full Stack & Criador de Experiências Digitais</p>
+            <div class="drapeauDiv">
+                <svg class="drapeau" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40">
+                    <rect width="60" height="40" fill="#009c3b"/>
+                    <polygon points="30,5 55,20 30,35 5,20" fill="#ffdf00"/>
+                    <circle cx="30" cy="20" r="7" fill="#002776"/>
+                </svg>
+            </div>
+            <div class="contact_me_button">
+                <a href="https://api.whatsapp.com/send?phone=5511991952333&text=" target="_blank" rel="noopener" class="contactMe_Text">
+                    Fale comigo
+                    <span class="iconify whatsappIcon" data-icon="akar-icons:whatsapp-fill"></span>
+                </a>
+            </div>
+        </div>
+        <p class="scrollToNavigate">role para navegar</p>
+        <div class="scrollView">
+            <svg class="logo" viewBox="0 0 30 50" fill="none">
+                <rect x="10" y="10" width="10" height="30" rx="5" stroke="#66fcea" stroke-width="2"/>
+                <circle cx="15" cy="20" r="3" fill="#66fcea">
+                    <animate attributeName="cy" values="20;30;20" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+    </section>
+
+    <section class="section1 work1 projects">
+        <div class="titleSection2">
+            <h2 class="myProjectText">Meus Projetos</h2>
+        </div>
+        <div class="textProjectsDiv">
+            <div class="singleline">
+                <a href="#" class="textProjectsTest" data-description="Aplicativo de Aprendizado de Inglês: Plataforma interativa com Firebase e reconhecimento de voz para prática de pronúncia. Tecnologias: React, Firebase, Web Speech API">
+                    Aplicativo de Inglês <span class="pointProjects">●</span>
+                    <span class="spanProjectGradientText">Plataforma Interativa de Aprendizado</span>
+                </a>
+            </div>
+            
+            <div class="singleline">
+                <a href="#" class="textProjectsTest" data-description="E-commerce com Dropshipping: Loja online completa com integração Stripe, Supabase e gerenciamento de inventário. Tecnologias: Next.js, Stripe, Supabase">
+                    E-commerce Dropshipping <span class="pointProjects">●</span>
+                    <span class="spanProjectGradientText">Sistema Completo de Vendas</span>
+                </a>
+            </div>
+            
+            <div class="singleline">
+                <a href="#" class="textProjectsTest" data-description="Sistema de Agendamento de Barbearia: App de gestão com notificações push, confirmação de pagamento e controle de 100+ clientes. Tecnologias: React, PWA, Service Workers">
+                    App Barbearia <span class="pointProjects">●</span>
+                    <span class="spanProjectGradientText">Gestão e Agendamento Inteligente</span>
+                </a>
+            </div>
+            
+            <div class="singleline">
+                <a href="#" class="textProjectsTest" data-description="Zanvexis - Serviços Digitais: Empresa de automação e desenvolvimento de aplicações web customizadas com integração de IA. Tecnologias: Full Stack, AI Integration">
+                    Zanvexis <span class="pointProjects">●</span>
+                    <span class="spanProjectGradientText">Automação e Desenvolvimento Custom</span>
+                </a>
+            </div>
+
+            <div class="singleline">
+                <a href="#" class="textProjectsTest" data-description="Dashboard de Trading Cripto: Análise técnica em tempo real com Smart Money e metodologia Wyckoff para trading de criptomoedas. Tecnologias: React, Trading APIs, WebSocket">
+                    Trading Dashboard <span class="pointProjects">●</span>
+                    <span class="spanProjectGradientTextPurple">Análise Técnica Avançada</span>
+                </a>
+            </div>
+
+            <div class="singleline">
+                <a href="#" class="textProjectsTest" data-description="Gerador de Vídeos com IA: Plataforma para criação de conteúdo promocional usando IA para geração de vídeos. Tecnologias: AI Video Generation, DaVinci Resolve API">
+                    AI Video Generator <span class="pointProjects">●</span>
+                    <span class="spanProjectGradientTextPurple">Criação Automatizada de Conteúdo</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section work">
+        <div class="titleSection2">
+            <h2 class="myProjectText">
+                <span style="color: #66fcea; text-shadow: 0 0 2em #66fcea">T</span>ecnologias
+            </h2>
+        </div>
+
+        <div class="movieEditingDiv">
+            <div class="block Left content-wrapper">
+                <p class="blockText">A<span style="color: #66fcea; text-shadow: 0 0 0.5em #66fcea">n</span>imação</p>
+                <a title="Final Cut Pro"><span class="iconify" data-icon="mdi:movie-open-edit-outline"></span></a>
+                <a title="After Effects"><span class="iconify" data-icon="simple-icons:adobeaftereffects"></span></a>
+                <a title="Blender"><span class="iconify" data-icon="bxl:blender"></span></a>
+            </div>
+            <div class="block Right">
+                <p class="blockText">D<span style="color: #66fcea; text-shadow: 0 0 0.5em #66fcea">e</span>sign</p>
+                <a title="Adobe XD"><span class="iconify" data-icon="simple-icons:adobexd"></span></a>
+                <a title="Photoshop"><span class="iconify" data-icon="simple-icons:adobephotoshop"></span></a>
+                <a title="Illustrator"><span class="iconify" data-icon="simple-icons:adobeillustrator"></span></a>
+            </div>
+        </div>
+
+        <div class="technologyUsedDiv content-wrapper">
+            <p class="blockText" style="width: 100%; text-align: right;">Stack Completo</p>
+            <a title="React"><span class="iconify" data-icon="vscode-icons:file-type-reactjs"></span></a>
+            <a title="Next.js"><span class="iconify" data-icon="logos:nextjs-icon"></span></a>
+            <a title="Node.js"><span class="iconify" data-icon="fa-brands:node"></span></a>
+            <a title="TypeScript"><span class="iconify" data-icon="logos:typescript-icon"></span></a>
+            <a title="JavaScript"><span class="iconify" data-icon="logos:javascript"></span></a>
+            <a title="Python"><span class="iconify" data-icon="vscode-icons:file-type-python"></span></a>
+            <a title="HTML5"><span class="iconify" data-icon="logos:html-5"></span></a>
+            <a title="CSS3"><span class="iconify" data-icon="vscode-icons:file-type-css"></span></a>
+            <a title="Three.js"><span class="iconify" data-icon="logos:threejs"></span></a>
+            <a title="Firebase"><span class="iconify" data-icon="logos:firebase"></span></a>
+            <a title="MongoDB"><span class="iconify" data-icon="logos:mongodb"></span></a>
+            <a title="PostgreSQL"><span class="iconify" data-icon="logos:postgresql"></span></a>
+            <a title="GitHub"><span class="iconify" data-icon="logos:github-icon"></span></a>
+            <a title="Vercel"><span class="iconify" data-icon="logos:vercel-icon"></span></a>
+            <a title="Docker"><span class="iconify" data-icon="logos:docker-icon"></span></a>
+        </div>
+    </section>
+
+    <section class="section work">
+        <div class="titleSection2">
+            <h2 class="myProjectText">
+                Olá, <span style="color: #66fcea; text-shadow: 0 0 2em #66fcea">e</span>u sou o Vini
+            </h2>
+        </div>
+        <div class="singlelineMe content-wrapper">
+            <div class="stayInTouchDiv">
+                <p class="meProjectsTest">
+                    Consigo construir produtos com alta qualidade e velocidade no desenvolvimento de software.
+                </p>
+                <p class="meProjectsTest">
+                    Sou um desenvolvedor criativo de Web, IA e Blockchain do Brasil com formação em Ciências da Computação. Eu utilizo principalmente 
+                    <span class="spanProjectGradientTextMe">
+                        React, Next.js, Node, Express, Firebase, MongoDB, PostgreSQL, TypeScript, Python, Three.js, Web Speech API, PWA
+                    </span>
+                    para criar aplicativos web e mobile interativos, ferramentas com IA e sistemas completos, com alto padrão de design e usabilidade.
+                </p>
+                <p class="meProjectsTest">
+                    Dedico-me a explorar todo o potencial da IA e das tecnologias web modernas com grande paixão por criar experiências digitais incríveis. Minha experiência abrange desde 
+                     <span style="color: #66fcea; text-shadow: 0 0 0.5em #66fcea">
+                        automação de processos, integração de APIs, desenvolvimento de PWAs
+                    </span>, até 
+                    <span style="color: #66fcea; text-shadow: 0 0 0.5em #66fcea">
+                        análise de trading cripto, geração de conteúdo com IA, e desenvolvimento de aplicações full-stack escaláveis
+                    </span>.
+                </p>
+            </div>
+            <div class="stayInTouchDiv">
+                <p class="blockText">
+                    Vamos man<span style="color: #66fcea; text-shadow: 0 0 0.5em #66fcea">t</span>er contato ✎
+                </p>
+                <a href="https://api.whatsapp.com/send?phone=5511991952333&text=" target="_blank" rel="noopener" class="uperLink">
+                    <span class="iconify" data-icon="akar-icons:whatsapp-fill"></span>
+                    <p class="stayInTocuhLink">+55 (11) 991952333</p>
+                </a>
+                <a href="mailto:vns.pontual77@gmail.com" target="_blank" rel="noopener" class="uperLink">
+                    <span class="iconify" data-icon="ic:sharp-alternate-email"></span>
+                    <p class="stayInTocuhLink">vns.pontual77@gmail.com</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // ============================================
+        // THREE.JS ADVANCED SCENE SETUP
+        // ============================================
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('canvas3d'), 
+            alpha: true, 
+            antialias: true 
+        });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        camera.position.z = 30;
+
+        // ============================================
+        // ADVANCED PARTICLE SYSTEM
+        // ============================================
+        const particleCount = 5000;
+        const particleGeometry = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        const particleVelocities = new Float32Array(particleCount * 3);
+        const particleSizes = new Float32Array(particleCount);
+        const particleColors = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            particlePositions[i] = (Math.random() - 0.5) * 100;
+            particlePositions[i + 1] = (Math.random() - 0.5) * 100;
+            particlePositions[i + 2] = (Math.random() - 0.5) * 100;
+            
+            particleVelocities[i] = (Math.random() - 0.5) * 0.03;
+            particleVelocities[i + 1] = (Math.random() - 0.5) * 0.03;
+            particleVelocities[i + 2] = (Math.random() - 0.5) * 0.03;
+            
+            particleSizes[i / 3] = Math.random() * 4 + 1;
+            
+            // Cyan to Purple gradient
+            const colorMix = Math.random();
+            particleColors[i] = 0.4 + (0.66 - 0.4) * colorMix;
+            particleColors[i + 1] = 0.99 - (0.99 - 0.33) * colorMix;
+            particleColors[i + 2] = 0.92 + (0.97 - 0.92) * colorMix;
+        }
+
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        particleGeometry.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+        particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            size: 0.15,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            sizeAttenuation: true,
+            depthWrite: false
+        });
+
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particleSystem);
+
+        // ============================================
+        // ANIMATED TORUS KNOT
+        // ============================================
+        const torusGeometry = new THREE.TorusKnotGeometry(3, 1, 150, 20);
+        const torusMaterial = new THREE.MeshBasicMaterial({
+            color: 0xa855f7,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.25
+        });
+        const torusKnot = new THREE.Mesh(torusGeometry, torusMaterial);
+        torusKnot.position.set(-15, 5, -30);
+        scene.add(torusKnot);
+
+        // ============================================
+        // ICOSAHEDRON WITH GLOW
+        // ============================================
+        const icoGeometry = new THREE.IcosahedronGeometry(2.5, 1);
+        const icoMaterial = new THREE.MeshBasicMaterial({
+            color: 0x66fcea,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.35
+        });
+        const icosahedron = new THREE.Mesh(icoGeometry, icoMaterial);
+        icosahedron.position.set(15, -5, -25);
+        scene.add(icosahedron);
+
+        // ============================================
+        // OCTAHEDRON
+        // ============================================
+        const octaGeometry = new THREE.OctahedronGeometry(2, 0);
+        const octaMaterial = new THREE.MeshBasicMaterial({
+            color: 0xa855f7,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const octahedron = new THREE.Mesh(octaGeometry, octaMaterial);
+        octahedron.position.set(0, 10, -20);
+        scene.add(octahedron);
+
+        // ============================================
+        // MOUSE INTERACTION
+        // ============================================
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // ============================================
+        // SCROLL-BASED ANIMATION
+        // ============================================
+        let scrollY = 0;
+        window.addEventListener('scroll', () => {
+            scrollY = window.scrollY;
+        });
+
+        // ============================================
+        // ANIMATION LOOP
+        // ============================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Smooth mouse follow
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            camera.position.x += (targetX * 3 - camera.position.x) * 0.05;
+            camera.position.y += (targetY * 3 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            // Animate particles with physics
+            const positions = particleGeometry.attributes.position.array;
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] += particleVelocities[i];
+                positions[i + 1] += particleVelocities[i + 1];
+                positions[i + 2] += particleVelocities[i + 2];
+
+                // Boundary check with bounce
+                if (Math.abs(positions[i]) > 50) particleVelocities[i] *= -1;
+                if (Math.abs(positions[i + 1]) > 50) particleVelocities[i + 1] *= -1;
+                if (Math.abs(positions[i + 2]) > 50) particleVelocities[i + 2] *= -1;
+            }
+            particleGeometry.attributes.position.needsUpdate = true;
+
+            // Rotate particle system
+            particleSystem.rotation.y += 0.0005;
+            particleSystem.rotation.x = scrollY * 0.0003;
+            
+            // Animate torus knot
+            torusKnot.rotation.x += 0.008;
+            torusKnot.rotation.y += 0.012;
+            torusKnot.position.y = 5 + Math.sin(time * 0.5) * 3;
+            torusKnot.position.x = -15 + Math.cos(time * 0.3) * 2;
+
+            // Animate icosahedron
+            icosahedron.rotation.x += 0.015;
+            icosahedron.rotation.z += 0.01;
+            icosahedron.position.y = -5 + Math.cos(time * 0.7) * 2;
+            icosahedron.position.z = -25 + Math.sin(time * 0.4) * 5;
+
+            // Animate octahedron
+            octahedron.rotation.y += 0.02;
+            octahedron.rotation.x += 0.01;
+            octahedron.position.y = 10 + Math.sin(time * 0.8) * 2.5;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // ============================================
+        // WINDOW RESIZE HANDLER
+        // ============================================
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============================================
+        // TV SCREEN PROJECT DESCRIPTIONS
+        // ============================================
+        const tvScreen = document.getElementById('tv-screen');
+        const projectLinks = document.querySelectorAll('a[data-description]');
+
+        projectLinks.forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                const description = link.getAttribute('data-description');
+                if (description) {
+                    tvScreen.textContent = description;
+                    tvScreen.classList.add('active');
+                }
+            });
+
+            link.addEventListener('mouseleave', () => {
+                tvScreen.classList.remove('active');
+            });
+        });
+
+        // ============================================
+        // TUNNEL SCROLL EFFECT
+        // ============================================
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const mainTitle = document.querySelector('.mainTitle');
+            const presentationSection = document.querySelector('.presentation');
+            const contentWrappers = document.querySelectorAll('.textProjectsDiv, .content-wrapper');
+
+            // Hero title tunnel effect
+            if (mainTitle && presentationSection) {
+                const sectionHeight = presentationSection.offsetHeight;
+                const scrollFraction = scrollY / sectionHeight;
+
+                const scale = Math.max(0.2, 1 - scrollFraction * 0.8);
+                const opacity = Math.max(0.1, 1 - scrollFraction * 0.9);
+
+                mainTitle.style.transform = `scale(${scale})`;
+                mainTitle.style.opacity = `${opacity}`;
+            }
+
+            // Content wrappers 3D effect
+            contentWrappers.forEach(wrapper => {
+                const rect = wrapper.getBoundingClientRect();
+                const progress = 1 - Math.max(0, Math.min(1, rect.top / windowHeight));
+
+                if (progress > 0) {
+                    const scale = 1 - progress * 0.1;
+                    const translateX = progress * 5;
+                    wrapper.style.transform = `translateX(${translateX}%) scale(${scale})`;
+                }
+            });
+        });
+
+        // ============================================
+        // SMOOTH SCROLL
+        // ============================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // ============================================
+        // SCROLL PROGRESS INDICATOR
+        // ============================================
+        const progressBar = document.createElement('div');
+        progressBar.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #66fcea, #a855f7);
+            z-index: 10000;
+            transition: width 0.1s ease;
+        `;
+        document.body.appendChild(progressBar);
+
+        window.addEventListener('scroll', () => {
+            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            progressBar.style.width = scrollPercent + '%';
+        });
+
+        // ============================================
+        // TYPING EFFECT
+        // ============================================
+        const creativeText = document.getElementById('creativeDev');
+        const text = 'Desenvolvedor Web Full Stack & Criador de Experiências Digitais';
+        let index = 0;
+
+        function typeWriter() {
+            if (index < text.length) {
+                creativeText.textContent = text.substring(0, index + 1);
+                index++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            creativeText.textContent = '';
+            setTimeout(typeWriter, 1000);
+        });
+
+        // ============================================
+        // PRELOADER THREE.JS ANIMATION
+        // ============================================
+        const preloaderCanvas = document.getElementById('preloader-canvas');
+        const preloaderRenderer = new THREE.WebGLRenderer({ 
+            canvas: preloaderCanvas, 
+            alpha: true, 
+            antialias: true 
+        });
+        
+        preloaderRenderer.setSize(window.innerWidth, window.innerHeight);
+        preloaderRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const preloaderScene = new THREE.Scene();
+        const preloaderCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        preloaderCamera.position.z = 15;
+
+        // Create multiple geometric shapes
+        const geometries = [
+            new THREE.TorusGeometry(2, 0.5, 16, 100),
+            new THREE.IcosahedronGeometry(2, 0),
+            new THREE.OctahedronGeometry(2.5, 0),
+            new THREE.TetrahedronGeometry(2, 0),
+            new THREE.DodecahedronGeometry(2, 0)
+        ];
+
+        const preloaderObjects = [];
+        geometries.forEach((geo, index) => {
+            const material = new THREE.MeshBasicMaterial({
+                color: index % 2 === 0 ? 0x66fcea : 0xa855f7,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.6
+            });
+            const mesh = new THREE.Mesh(geo, material);
+            
+            // Position in circle
+            const angle = (index / geometries.length) * Math.PI * 2;
+            mesh.position.x = Math.cos(angle) * 5;
+            mesh.position.y = Math.sin(angle) * 5;
+            mesh.position.z = -5;
+            
+            preloaderScene.add(mesh);
+            preloaderObjects.push(mesh);
+        });
+
+        // Add particles to preloader
+        const preloaderParticleCount = 1000;
+        const preloaderParticleGeo = new THREE.BufferGeometry();
+        const preloaderParticlePositions = new Float32Array(preloaderParticleCount * 3);
+        const preloaderParticleColors = new Float32Array(preloaderParticleCount * 3);
+
+        for (let i = 0; i < preloaderParticleCount * 3; i += 3) {
+            preloaderParticlePositions[i] = (Math.random() - 0.5) * 30;
+            preloaderParticlePositions[i + 1] = (Math.random() - 0.5) * 30;
+            preloaderParticlePositions[i + 2] = (Math.random() - 0.5) * 30;
+            
+            const colorMix = Math.random();
+            preloaderParticleColors[i] = 0.4 + (0.66 - 0.4) * colorMix;
+            preloaderParticleColors[i + 1] = 0.99 - (0.99 - 0.33) * colorMix;
+            preloaderParticleColors[i + 2] = 0.92 + (0.97 - 0.92) * colorMix;
+        }
+
+        preloaderParticleGeo.setAttribute('position', new THREE.BufferAttribute(preloaderParticlePositions, 3));
+        preloaderParticleGeo.setAttribute('color', new THREE.BufferAttribute(preloaderParticleColors, 3));
+
+        const preloaderParticleMat = new THREE.PointsMaterial({
+            size: 0.1,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const preloaderParticles = new THREE.Points(preloaderParticleGeo, preloaderParticleMat);
+        preloaderScene.add(preloaderParticles);
+
+        let preloaderActive = true;
+        let preloaderTime = 0;
+
+        function animatePreloader() {
+            if (!preloaderActive) return;
+            
+            requestAnimationFrame(animatePreloader);
+            preloaderTime += 0.01;
+
+            // Rotate all objects
+            preloaderObjects.forEach((obj, index) => {
+                obj.rotation.x += 0.01 * (index + 1);
+                obj.rotation.y += 0.015 * (index + 1);
+                
+                // Pulsating effect
+                const scale = 1 + Math.sin(preloaderTime * 2 + index) * 0.2;
+                obj.scale.set(scale, scale, scale);
+
+                // Orbit animation
+                const angle = preloaderTime * 0.5 + (index / preloaderObjects.length) * Math.PI * 2;
+                obj.position.x = Math.cos(angle) * 6;
+                obj.position.y = Math.sin(angle) * 6;
+            });
+
+            // Rotate particles
+            preloaderParticles.rotation.y += 0.001;
+            preloaderParticles.rotation.x += 0.0005;
+
+            // Camera movement
+            preloaderCamera.position.x = Math.sin(preloaderTime * 0.3) * 2;
+            preloaderCamera.position.y = Math.cos(preloaderTime * 0.2) * 2;
+            preloaderCamera.lookAt(preloaderScene.position);
+
+            preloaderRenderer.render(preloaderScene, preloaderCamera);
+        }
+
+        animatePreloader();
+
+        // Loading progress simulation
+        let loadingProgress = 0;
+        const loadingBarFill = document.getElementById('loading-bar-fill');
+        const progressDots = document.getElementById('progress-dots');
+        const preloaderDiv = document.querySelector('.preloadingPageDiv');
+
+        const loadingInterval = setInterval(() => {
+            loadingProgress += Math.random() * 20 + 10;
+            
+            if (loadingProgress >= 100) {
+                loadingProgress = 100;
+                loadingBarFill.style.width = '100%';
+                clearInterval(loadingInterval);
+                
+                setTimeout(() => {
+                    preloaderActive = false;
+                    preloaderDiv.classList.add('loaded');
+                    
+                    // Destroy preloader scene
+                    setTimeout(() => {
+                        preloaderRenderer.dispose();
+                        preloaderScene.clear();
+                    }, 1000);
+                }, 300);
+            } else {
+                loadingBarFill.style.width = loadingProgress + '%';
+            }
+            
+            // Animate dots
+            const dotCount = Math.floor(Date.now() / 300) % 4;
+            progressDots.textContent = '.'.repeat(dotCount);
+        }, 150);
+
+        // ============================================
+        // MAIN SCENE (EXISTING CODE)
+        // ============================================
+
+        console.log('%c🚀 Portfólio Vinicius', 'font-size: 20px; color: #66fcea; font-weight: bold;');
+        console.log('%c✨ Powered by Three.js', 'font-size: 14px; color: #a855f7;');
+    </script>
+</body>
+</html>
